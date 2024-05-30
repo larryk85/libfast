@@ -10,7 +10,7 @@
 #include <array>
 
 namespace fast {
-   void PrintLastError() {
+   void print_last_error() {
       DWORD msg_id = ::GetLastError();
       if (msg_id == 0) {
          std::cout << "No error occurred." << std::endl;
@@ -80,11 +80,11 @@ namespace fast {
             unload();
          }
          inline auto get_size() const {
-            PLARGE_INTEGER size = 0;
-            if (GetFileSizeEx(*file_handle, size) == 0) {
+            LARGE_INTEGER size = {0};
+            if (GetFileSizeEx(*file_handle, &size) == 0) {
                throw loader_impl_error("Failed to get file size");
             }
-            return size->QuadPart;
+            return size.QuadPart;
          }
 
          constexpr inline auto get_view() const {
@@ -103,7 +103,7 @@ namespace fast {
             DWORD sz = GetFinalPathNameByHandleW(*file_handle, nullptr, 0, FILE_NAME_OPENED);
             std::wstring fn(sz+1, '\0');
             if (GetFinalPathNameByHandleW(*file_handle, fn.data(), sz+1, FILE_NAME_OPENED) == 0) {
-               PrintLastError();
+               print_last_error();
                throw std::runtime_error("Failed to get file name from handle");
             }
             return fn;
@@ -112,18 +112,15 @@ namespace fast {
          inline void load(std::string_view fn) {
             auto mode = std::filesystem::exists(fn) ? OPEN_EXISTING : CREATE_NEW;
             file_handle = {CreateFileA(fn.data(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, mode, FILE_ATTRIBUTE_NORMAL, nullptr)};
-            std::wcout << "MN: " << get_file_name() << std::endl;
 
             if (*file_handle == INVALID_HANDLE_VALUE) {
-               PrintLastError();
+               print_last_error();
                throw loader_impl_error("File Creation Failed or File Not Found");
             }
 
             mapping = CreateFileMappingA(*file_handle, nullptr, PAGE_READWRITE, 0, INT_MAX, nullptr);
-            std::cout << "mapping: " << mapping << std::endl;
-            PrintLastError();
             if (!mapping) {
-               PrintLastError();
+               print_last_error();
                throw loader_impl_error("Initial Mapping Failed");
             }
 

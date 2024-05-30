@@ -15,21 +15,13 @@ link_libraries(Threads::Threads)
 
 include(FetchContent)
 
-#set(FETCHCONTENT_QUIET OFF)
-#FetchContent_Declare(
-#	google_protobufs
-#	GIT_REPOSITORY https://github.com/protocolbuffers/protobuf
-#	GIT_TAG main
-#)
-#FetchContent_MakeAvailable(google_protobufs)
-
-#FetchContent_Declare(
-#   grpc
-#   GIT_REPOSITORY https://github.com/grpc/grpc
-#   GIT_TAG v1.35.0
-#)
-#FetchContent_MakeAvailable(grpc)
-
+set(FETCHCONTENT_QUIET OFF)
+FetchContent_Declare(
+   cturtle
+	GIT_REPOSITORY https://github.com/larryk85/cturtle
+	GIT_TAG main
+)
+FetchContent_MakeAvailable(cturtle)
 
 include(CMakeDependentOption)
 option(LIBFAST_ENABLE_INSTALL "enable installation" ON)
@@ -45,14 +37,15 @@ endif()
 
 add_subdirectory(external)
 
-#set(NATIVM_LIB_SRCS src/nativm.cpp
-#                    src/disassembler.cpp
-#)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/fast/arch/loader/${CMAKE_SYSTEM_NAME}.hpp
+               ${CMAKE_CURRENT_BINARY_DIR}/include/fast/arch/loader.hpp @ONLY)
 
 add_library(libfast INTERFACE)
 target_include_directories(libfast INTERFACE
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
    $<INSTALL_INTERFACE:include>)
+target_link_libraries(libfast INTERFACE cturtle)
 add_library(fast::fast ALIAS libfast)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/include)

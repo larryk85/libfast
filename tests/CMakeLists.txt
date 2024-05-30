@@ -3,7 +3,7 @@
 # ##################################################################################################
 add_executable( 
    libfast_unit_tests 
-   fast.cpp
+   fast_tests.cpp
 )
 
 target_link_libraries( libfast_unit_tests PRIVATE fast::fast Catch2::Catch2WithMain )
